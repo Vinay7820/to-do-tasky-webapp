@@ -1,0 +1,16 @@
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraform.lock.hcl
+crash.log
+
+# OS / IDE
+.DS_Store
+*.log
+
+# Go build outputs (if you built locally)
+tasky
+*.exe
+*.out
+*.o
