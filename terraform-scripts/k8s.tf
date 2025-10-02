@@ -74,14 +74,15 @@ resource "kubernetes_deployment" "tasky" {
           image = "${aws_ecr_repository.this.repository_url}:wiz-v1"
           port { container_port = 8080 }
           env {
-            name = "MONGODB_URI"
-            value_from {
-              secret_key_ref {
-                name = kubernetes_secret.mongo_uri.metadata[0].name
-                key  = "MONGODB_URI"
-              }
-            }
-          }
+  			name = "MONGO_URI"
+  			value_from {
+    		 secret_key_ref {
+      			name = kubernetes_secret.mongo_uri.metadata[0].name  # mongo-uri-secret
+      			key  = "MONGODB_URI"
+    }
+  }
+}
+
         }
       }
     }
