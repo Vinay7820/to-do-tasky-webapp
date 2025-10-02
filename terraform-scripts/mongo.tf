@@ -71,7 +71,7 @@ resource "aws_instance" "mongo" {
     inline = [
     "until systemctl status mongod >/dev/null 2>&1; do sleep 5; done",
     "until mongo --eval \"db.adminCommand('ping')\" >/dev/null 2>&1; do sleep 5; done",
-    "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
+    "mongo --eval 'if (db.getSiblingDB(\"taskydb\").getUser(\"taskyuser\") == null) { db.getSiblingDB(\"taskydb\").createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]}) }'"
   ]
 
     connection {
