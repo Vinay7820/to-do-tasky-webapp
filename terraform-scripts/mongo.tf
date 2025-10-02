@@ -106,5 +106,10 @@ resource "aws_s3_bucket_policy" "mongo_backups" {
       }
     ]
   })
- depends_on = [aws_s3_bucket.mongo_backups]
+ 
+  # Wait for both bucket creation *and* public block disable
+  depends_on = [
+    aws_s3_bucket.mongo_backups,
+    null_resource.disable_account_public_block
+]
 }
