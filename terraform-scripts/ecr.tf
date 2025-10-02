@@ -13,5 +13,6 @@ resource "null_resource" "push_image" {
       chmod +x ${path.module}/push.sh
       ${path.module}/push.sh
     EOT
+    working_dir = "${path.module}"
   }
 }
