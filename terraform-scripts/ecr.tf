@@ -13,6 +13,5 @@ resource "null_resource" "push_image" {
       chmod +x ./push.sh
       ./push.sh
     EOT
-    working_dir = "${path.module}"   # ensures it runs from terraform-scripts/
   }
 }
