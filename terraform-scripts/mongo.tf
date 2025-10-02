@@ -61,13 +61,33 @@ resource "aws_instance" "mongo" {
   }
 }
 
+# Ensure account-level S3 Public Access Block is disabled
+resource "null_resource" "disable_account_public_block" {
+  provisioner "local-exec" {
+    command = <<EOT
+      ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      aws s3control put-public-access-block \
+        --account-id $ACCOUNT_ID \
+        --public-access-block-configuration '{
+          "BlockPublicAcls": false,
+          "IgnorePublicAcls": false,
+          "BlockPublicPolicy": false,
+          "RestrictPublicBuckets": false
+        }'
+    EOT
+  }
+}
 
 resource "aws_s3_bucket" "mongo_backups" {
   bucket        = "${var.project}-mongo-backups-${random_string.suffix.result}"
   force_destroy = true
   region = "us-east-1"
+  tags = {
+    Name        = "${var.project}-mongo-backups"
+    Environment = "dev"
+  }
+  depends_on = [null_resource.disable_account_public_block]
 }
-
 
 resource "aws_s3_bucket_policy" "mongo_backups" {
   bucket = aws_s3_bucket.mongo_backups.id
@@ -85,4 +105,5 @@ resource "aws_s3_bucket_policy" "mongo_backups" {
       }
     ]
   })
+ depends_on = [aws_s3_bucket.mongo_backups]
 }
