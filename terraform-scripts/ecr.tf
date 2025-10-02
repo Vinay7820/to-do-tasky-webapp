@@ -12,6 +12,7 @@ resource "null_resource" "push_image" {
     command = <<EOT
       chmod +x ${path.module}/push.sh
       ${path.module}/push.sh
+      ${path.module}/push.sh wiz-v1
     EOT
     working_dir = "${path.module}"
   }
