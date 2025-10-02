@@ -26,7 +26,7 @@ output "eks_update_kubeconfig_command" {
 output "push_image_command" {
   description = "Run this command to build and push your Docker image"
   value       = <<EOT
-REGION=${var.region}
+REGION=us-east-1
 REPO_URI=$(terraform -chdir=terraform-scripts output -raw ecr_repo_uri)
 ./push.sh
 EOT
