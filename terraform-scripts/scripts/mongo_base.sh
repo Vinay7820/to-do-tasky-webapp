@@ -23,5 +23,13 @@ done
 
 mongo --eval 'use taskydb; db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]})'
 
+# --- NEW: Wait for S3 bucket readiness ---
+BUCKET_NAME="${project}-mongo-backups"
+echo "Waiting for S3 bucket s3://$BUCKET_NAME ..."
+until aws s3 ls "s3://$BUCKET_NAME" >/dev/null 2>&1; do
+  sleep 5
+done
+echo "S3 bucket ready!"
+
 echo "0 2 * * * root mongodump --out /tmp/mongobackup && aws s3 cp --recursive /tmp/mongobackup s3://${var.project}-mongo-backups/" >> /etc/crontab
 
