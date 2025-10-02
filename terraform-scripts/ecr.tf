@@ -9,7 +9,7 @@ resource "null_resource" "push_image" {
   ]
 
   provisioner "local-exec" {
-    command     =<<EOT
+    command = <<EOT
       chmod +x ./push.sh
       ./push.sh
     EOT
