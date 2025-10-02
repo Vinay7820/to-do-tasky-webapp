@@ -1,6 +1,6 @@
 # AWS provider (use var.aws_region from variables.tf)
 provider "aws" {
-  region = "ap-south-1"
+  region = "us-east-1"
 }
 
 # EKS cluster data sources
