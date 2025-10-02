@@ -52,13 +52,13 @@ resource "aws_instance" "mongo" {
   #    "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
   #  ]
 
-    connection {
-      type        = "ssh"
-      user        = "ubuntu"
-      private_key = file(pathexpand("../d-vim-mongo-server.pem"))
-      host        = self.public_ip
-    }
-  }
+  #  connection {
+  #    type        = "ssh"
+  #    user        = "ubuntu"
+  #    private_key = file(pathexpand("../d-vim-mongo-server.pem"))
+  #    host        = self.public_ip
+  #  }
+  #}
 }
 
 # Ensure account-level S3 Public Access Block is disabled
