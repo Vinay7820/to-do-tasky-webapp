@@ -24,6 +24,7 @@ resource "kubernetes_secret" "mongo_uri" {
 	MONGODB_URI = "mongodb://taskyuser:taskypass@${aws_instance.mongo.private_ip}:27017/taskydb"
   }
   depends_on = [
+    depends_on = [null_resource.update_kubeconfig],
     aws_eks_cluster.this,
     aws_eks_node_group.this
   ]
@@ -115,6 +116,7 @@ resource "kubernetes_service" "tasky" {
     type = "LoadBalancer"
   }
   depends_on = [
+    depends_on = [null_resource.update_kubeconfig],
 	aws_eks_cluster.this,
 	aws_eks_node_group.this
 ]
@@ -143,6 +145,7 @@ resource "kubernetes_ingress_v1" "tasky" {
     }
   }
   depends_on = [
+	depends_on = [null_resource.update_kubeconfig],
     aws_eks_cluster.this,
     aws_eks_node_group.this
   ]
@@ -169,6 +172,7 @@ resource "kubernetes_config_map" "aws_auth" {
   }
 
   depends_on = [
+    depends_on = [null_resource.update_kubeconfig],
     aws_eks_cluster.this,
     aws_eks_node_group.this
   ]
