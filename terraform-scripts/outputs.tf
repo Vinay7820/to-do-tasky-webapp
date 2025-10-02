@@ -18,3 +18,10 @@ output "eks_nodes_role_arn" {
   value       = aws_iam_role.eks_nodes.arn
 }
 
+output "eks_update_kubeconfig_command" {
+  description = "Run this command to update your kubeconfig and connect kubectl to your EKS cluster"
+  value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.this.name}"
+}
+
+
+
