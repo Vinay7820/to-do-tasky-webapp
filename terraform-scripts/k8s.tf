@@ -1,11 +1,19 @@
+resource "null_resource" "update_kubeconfig" {
+  provisioner "local-exec" {
+    command = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.this.name}"
+  }
+
+  depends_on = [aws_eks_cluster.this]
+}
+
 resource "kubernetes_namespace" "tasky" {
   metadata { name = "tasky-wiz" }
   depends_on = [
+	null_resource.update_kubeconfig,
     aws_eks_cluster.this,
     aws_eks_node_group.this
   ]
 }
-
 
 resource "kubernetes_secret" "mongo_uri" {
   metadata {
@@ -51,6 +59,7 @@ resource "kubernetes_deployment" "tasky" {
     name      = "tasky"
     namespace = kubernetes_namespace.tasky.metadata[0].name
   }
+ depends_on = [null_resource.update_kubeconfig]
 
   spec {
     replicas = 2
