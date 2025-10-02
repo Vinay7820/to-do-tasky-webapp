@@ -65,6 +65,7 @@ resource "aws_instance" "mongo" {
 resource "aws_s3_bucket" "mongo_backups" {
   bucket        = "${var.project}-mongo-backups-${random_string.suffix.result}"
   force_destroy = true
+  region = "us-east-1"
 }
 
 
