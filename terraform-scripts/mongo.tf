@@ -59,6 +59,9 @@ resource "aws_instance" "mongo" {
   subnet_id     = aws_subnet.public[0].id
   key_name      = aws_key_pair.mongo.key_name
   vpc_security_group_ids = [aws_security_group.mongo_sg.id]
+  depends_on = [
+    null_resource.disable_account_public_block
+  ]
 
   # Existing user_data for base setup
   user_data = file("scripts/mongo_base.sh")
