@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-REGION="ap-south-1"
+REGION="us-east-1"
 REPO_URI=$(terraform -chdir=terraform-scripts output -raw ecr_repo_uri)
 TAG="${1:-wiz-v1}"
 
