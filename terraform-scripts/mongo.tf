@@ -44,13 +44,13 @@ resource "aws_instance" "mongo" {
   user_data = file("scripts/mongo_base.sh")
 
   # Remote exec to (re)apply DB user creation
-  provisioner "remote-exec" {
-    inline = [
-      # Ensure mongod is running
-      "sudo systemctl start mongod || true",
+  #provisioner "remote-exec" {
+  #  inline = [
+  #    # Ensure mongod is running
+  #    "sudo systemctl start mongod || true",
 
-      "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
-    ]
+  #    "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
+  #  ]
 
     connection {
       type        = "ssh"
