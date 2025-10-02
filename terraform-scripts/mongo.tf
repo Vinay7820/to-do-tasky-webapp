@@ -74,6 +74,7 @@ resource "null_resource" "disable_account_public_block" {
           "BlockPublicPolicy": false,
           "RestrictPublicBuckets": false
         }'
+    sleep 10
     EOT
   }
 }
