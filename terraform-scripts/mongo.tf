@@ -33,11 +33,31 @@ data "aws_ami" "ubuntu_focal" {
   }
 }
 
+# Step 1: Generate .pub file from your PEM (if it doesn’t already exist)
+resource "null_resource" "generate_pubkey" {
+  provisioner "local-exec" {
+    command = "ssh-keygen -y -f ${pathexpand("~/.ssh/d-vim-mongo-server.pem")} > ${pathexpand("~/.ssh/d-vim-mongo-server.pub")}"
+  }
+
+  # This ensures we don’t regenerate unless the PEM changes
+  triggers = {
+    pem_hash = filesha256(pathexpand("~/.ssh/d-vim-mongo-server.pem"))
+  }
+}
+
+# Step 2: Create AWS Key Pair using the generated .pub
+resource "aws_key_pair" "mongo" {
+  key_name   = "d-vim-mongo-server"
+  public_key = file(pathexpand("~/.ssh/d-vim-mongo-server.pub"))
+
+  depends_on = [null_resource.generate_pubkey]
+}
+
 resource "aws_instance" "mongo" {
   ami           = data.aws_ami.ubuntu_focal.id
   instance_type = "t3.micro"
   subnet_id     = aws_subnet.public[0].id
-  key_name      = var.ssh_key_name
+  key_name      = aws_key_pair.mongo.key_name
   vpc_security_group_ids = [aws_security_group.mongo_sg.id]
 
   # Existing user_data for base setup
