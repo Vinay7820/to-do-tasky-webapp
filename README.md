@@ -15,13 +15,13 @@ Secrets: Kubernetes secrets (insecure demo: plaintext, fixed demo: AWS Secrets M
 🚀 Deployment Steps
 
 1️⃣ Clone the repo
-git clone https://github.com/Vinay7820/to-do-tasky-webapp.git
-cd to-do-tasky-webapp/terraform-scripts
+a) git clone https://github.com/Vinay7820/to-do-tasky-webapp.git
+b) cd to-do-tasky-webapp/terraform-scripts
 
 2️⃣ Initialize Terraform
-terraform init
+a) terraform init
 
 3️⃣ Apply
-terraform apply
+a) terraform apply
 
 When prompted for ssh_key_name, enter the name of your AWS EC2 key pair.
