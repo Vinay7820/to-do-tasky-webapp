@@ -3,7 +3,7 @@ variable "project" {
 }
 
 variable "aws_region" {
-  default = "ap-south-1"
+  default = "us-east-1"
 }
 
 variable "ssh_key_name" {
