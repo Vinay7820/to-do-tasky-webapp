@@ -55,7 +55,7 @@ resource "aws_instance" "mongo" {
     connection {
       type        = "ssh"
       user        = "ubuntu"
-      private_key = file(pathexpand("~/.ssh/d-vim-mongo-server.pem"))
+      private_key = file(pathexpand("../d-vim-mongo-server.pem"))
       host        = self.public_ip
     }
   }
