@@ -4,7 +4,7 @@ resource "aws_ecr_repository" "this" {
 
 resource "null_resource" "push_image" {
   depends_on = [
-    aws_ecr_repository.tasky,
+    aws_ecr_repository.this,
     aws_eks_cluster.this
   ]
 
