@@ -60,7 +60,6 @@ resource "kubernetes_deployment" "tasky" {
     name      = "tasky"
     namespace = kubernetes_namespace.tasky.metadata[0].name
   }
- depends_on = [null_resource.update_kubeconfig]
 
   spec {
     replicas = 2
@@ -88,6 +87,7 @@ resource "kubernetes_deployment" "tasky" {
     }
   }
   depends_on = [
+    null_resource.update_kubeconfig,
     aws_eks_cluster.this,
     aws_eks_node_group.this
   ]
