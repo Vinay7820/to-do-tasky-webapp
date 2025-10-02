@@ -69,12 +69,10 @@ resource "aws_instance" "mongo" {
   # Remote exec safety net
   provisioner "remote-exec" {
     inline = [
-      # ensure mongod is installed and running
-      "sudo systemctl start mongod || true",
-
-      # retry user creation (safe if already exists)
-      "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
-    ]
+    "until systemctl status mongod >/dev/null 2>&1; do sleep 5; done",
+    "until mongo --eval \"db.adminCommand('ping')\" >/dev/null 2>&1; do sleep 5; done",
+    "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
+  ]
 
     connection {
       type        = "ssh"
