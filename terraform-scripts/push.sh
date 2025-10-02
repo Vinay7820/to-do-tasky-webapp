@@ -2,7 +2,8 @@
 set -euo pipefail
 
 REGION="us-east-1"
-REPO_URI=$(terraform -chdir=terraform-scripts output -raw ecr_repo_uri)
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+REPO_URI=$(terraform -chdir="$SCRIPT_DIR" output -raw ecr_repo_uri)
 TAG="${1:-wiz-v1}"
 
 aws ecr get-login-password --region "$REGION" | docker login --username AWS --password-stdin "$REPO_URI"
