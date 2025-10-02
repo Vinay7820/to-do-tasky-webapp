@@ -24,12 +24,17 @@ output "eks_update_kubeconfig_command" {
 }
 
 output "push_image_command" {
-  description = "Run this command to build and push your Docker image"
+  description = "Run this command to build and push your Docker image, IF ./PUSH.SH FAILED ONLY"
   value       = <<EOT
 REGION=us-east-1
 REPO_URI=$(terraform -chdir=terraform-scripts output -raw ecr_repo_uri)
 ./push.sh
 EOT
+}
+
+output "ecr_repo_uri" {
+  description = "ECR repository URI for pushing the Tasky app image"
+  value       = aws_ecr_repository.tasky.repository_url
 }
 
 
