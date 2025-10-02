@@ -8,10 +8,10 @@ resource "null_resource" "push_image" {
     aws_eks_cluster.this
   ]
 
-  provisioner "local-exec" {
+ provisioner "local-exec" {
     command = <<EOT
-      chmod +x ./push.sh
-      ./push.sh
+      chmod +x ${path.module}/push.sh
+      ${path.module}/push.sh
     EOT
   }
 }
