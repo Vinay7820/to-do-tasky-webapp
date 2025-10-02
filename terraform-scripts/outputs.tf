@@ -23,5 +23,14 @@ output "eks_update_kubeconfig_command" {
   value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.this.name}"
 }
 
+output "push_image_command" {
+  description = "Run this command to build and push your Docker image"
+  value       = <<EOT
+REGION=${var.region}
+REPO_URI=$(terraform -chdir=terraform-scripts output -raw ecr_repo_uri)
+./push.sh
+EOT
+}
+
 
 
