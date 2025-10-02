@@ -63,22 +63,23 @@ resource "aws_instance" "mongo" {
   # Existing user_data for base setup
   user_data = file("scripts/mongo_base.sh")
 
-  # Remote exec to (re)apply DB user creation
-  #provisioner "remote-exec" {
-  #  inline = [
-  #    # Ensure mongod is running
-  #    "sudo systemctl start mongod || true",
+  # Remote exec safety net
+  provisioner "remote-exec" {
+    inline = [
+      # ensure mongod is installed and running
+      "sudo systemctl start mongod || true",
 
-  #    "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
-  #  ]
+      # retry user creation (safe if already exists)
+      "mongo --eval 'use taskydb; db.createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]})' || true"
+    ]
 
-  #  connection {
-  #    type        = "ssh"
-  #    user        = "ubuntu"
-  #    private_key = file(pathexpand("../d-vim-mongo-server.pem"))
-  #    host        = self.public_ip
-  #  }
-  #}
+    connection {
+      type        = "ssh"
+      user        = "ubuntu"
+      private_key = file(pathexpand("../d-vim-mongo-server.pem"))
+      host        = self.public_ip
+    }
+}
 }
 
 # Ensure account-level S3 Public Access Block is disabled
