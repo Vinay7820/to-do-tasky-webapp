@@ -6,7 +6,7 @@ It was designed intentionally with security misconfigurations for demo purposes 
 🏗️ Architecture
 
 1 - Frontend: Gin (Go) web app containerized and deployed on Amazon EKS
-2 - Backend: MongoDB 5.x hosted on an EC2 instance
+2 - Backend: MongoDB 5.x hosted on an EC2 instance.
 3 - Networking: Public ALB/NLB in front of EKS, VPC with public + private subnets
 
 Infra-as-Code: Terraform used to provision all resources
