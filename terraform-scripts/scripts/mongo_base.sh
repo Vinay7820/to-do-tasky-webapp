@@ -17,7 +17,8 @@ systemctl enable mongod
 systemctl restart mongod
 
 until mongo --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
-  sleep 2
+  echo "waiting for mongo to start..."
+  sleep 5
 done
 
 mongo --eval 'use taskydb; db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]})'
