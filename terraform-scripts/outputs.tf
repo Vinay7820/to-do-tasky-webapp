@@ -38,4 +38,11 @@ output "ecr_repo_uri" {
 }
 
 
+# Output AWS Config Rule Console URL
+output "config_rule_ec2_no_public_ssh_url" {
+  description = "Direct AWS Console link to the Config rule compliance page for SSH detection"
+  value       = "https://${var.region}.console.aws.amazon.com/config/home?region=${var.region}#/rules/${aws_config_config_rule.ec2_no_public_ssh.name}"
+}
+
+
 
