@@ -18,6 +18,14 @@ resource "aws_s3_bucket" "config_logs" {
   }
 }
 
+# Ensure correct ownership controls (no ACLs needed)
+resource "aws_s3_bucket_ownership_controls" "config_logs" {
+  bucket = aws_s3_bucket.config_logs.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 resource "aws_s3_bucket_policy" "config_logs" {
   bucket = aws_s3_bucket.config_logs.id
   policy = jsonencode({
@@ -38,15 +46,6 @@ resource "aws_s3_bucket_policy" "config_logs" {
   })
 }
 
-
-resource "aws_s3_bucket_ownership_controls" "config_logs" {
-  bucket = aws_s3_bucket.config_logs.id
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
-}
-
-
 # IAM Role for AWS Config
 resource "aws_iam_role" "config_role" {
   name = "${var.project}-config-role"
@@ -63,9 +62,10 @@ resource "aws_iam_role" "config_role" {
   })
 }
 
+# Attach correct managed policy
 resource "aws_iam_role_policy_attachment" "config_role_attach" {
   role       = aws_iam_role.config_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSConfigRole"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSConfigServiceRolePolicy"
 }
 
 
