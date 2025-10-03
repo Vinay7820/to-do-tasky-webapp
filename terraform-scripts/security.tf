@@ -56,7 +56,7 @@ resource "aws_iam_role_policy_attachment" "config_role_attach" {
 
 # AWS Config Recorder
 resource "aws_config_configuration_recorder" "main" {
-  name     = "config"
+  name     = "${var.project}-recorder"
   role_arn = aws_iam_role.config_role.arn
 
   recording_group {
@@ -67,7 +67,7 @@ resource "aws_config_configuration_recorder" "main" {
 
 # AWS Config Delivery Channel
 resource "aws_config_delivery_channel" "main" {
-  name           = "config-channel"
+  name           = "${var.project}-channel"
   s3_bucket_name = aws_s3_bucket.config_bucket.bucket
 
   depends_on = [aws_config_configuration_recorder.main]
