@@ -12,6 +12,7 @@ apt-get update -y
 apt-get install -y mongodb-org
 
 sed -i 's/^  bindIp:.*$/  bindIp: 0.0.0.0/' /etc/mongod.conf
+sed -i 's/^#security:/security:\n  authorization: enabled/' /etc/mongod.conf
 
 systemctl enable mongod
 systemctl restart mongod
