@@ -8,10 +8,23 @@ resource "aws_s3_bucket" "config_bucket" {
   force_destroy = true
 }
 
-resource "aws_s3_bucket_acl" "config_bucket_acl" {
-  bucket = aws_s3_bucket.config_bucket.id
-  acl    = "private"
+resource "aws_s3_bucket" "config_logs" {
+  bucket        = "${var.project}-config-logs-${random_string.suffix.result}"
+  force_destroy = true
+
+  tags = {
+    Name        = "${var.project}-config-logs"
+    Environment = "dev"
+  }
 }
+
+resource "aws_s3_bucket_ownership_controls" "config_logs" {
+  bucket = aws_s3_bucket.config_logs.id
+  rule {
+    object_ownership = "BucketOwnerEnforced"
+  }
+}
+
 
 # IAM Role for AWS Config
 resource "aws_iam_role" "config_role" {
