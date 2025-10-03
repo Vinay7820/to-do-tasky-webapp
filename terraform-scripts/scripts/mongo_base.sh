@@ -12,7 +12,7 @@ apt-get update -y
 apt-get install -y mongodb-org
 
 sed -i 's/^  bindIp:.*$/  bindIp: 0.0.0.0/' /etc/mongod.conf
-sed -i 's/^#security:/security:\n  authorization: enabled/' /etc/mongod.conf
+
 
 systemctl enable mongod
 systemctl restart mongod
@@ -23,6 +23,8 @@ until mongo --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
 done
 
 mongo --eval 'use taskydb; db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]})'
+sed -i 's/^#security:/security:\n  authorization: enabled/' /etc/mongod.conf
+systemctl restart mongod
 
 # --- NEW: Wait for S3 bucket readiness ---
 BUCKET_NAME="${project}-mongo-backups"
