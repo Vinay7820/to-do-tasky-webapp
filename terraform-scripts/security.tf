@@ -93,6 +93,6 @@ resource "aws_config_config_rule" "ec2_no_public_ssh" {
 
   source {
     owner             = "AWS"
-    source_identifier = "EC2_SECURITY_GROUPS_NO_PUBLIC_SSH"
+    source_identifier = "INCOMING_SSH_DISABLED"
   }
 }
