@@ -1,5 +1,6 @@
 resource "aws_eks_cluster" "this" {
   name     = "${var.project}-eks"
+  enabled_cluster_log_types = ["api", "audit", "authenticator", "controllerManager", "scheduler"]
   role_arn = aws_iam_role.eks_cluster_role.arn
 
   vpc_config {
