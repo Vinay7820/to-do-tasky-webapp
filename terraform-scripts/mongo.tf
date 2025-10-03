@@ -101,8 +101,14 @@ resource "null_resource" "disable_account_public_block" {
   }
 }
 
+resource "random_string" "bucket_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
 resource "aws_s3_bucket" "mongo_backups" {
-  bucket        = "${var.project}-mongo-backups-${random_string.suffix.result}"
+  bucket        = "${var.project}-mongo-backups-${random_string.bucket_suffix.result}"
   force_destroy = true
   region = "us-east-1"
   tags = {
