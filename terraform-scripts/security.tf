@@ -17,7 +17,22 @@ resource "random_string_local" "config_suffix" {
 resource "aws_s3_bucket" "config_logs" {
   bucket = "${var.project}-config-logs-${random_string_local.config_suffix.result}"
   force_destroy = true
-
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = {
+          Service = "config.amazonaws.com"
+        }
+        Action = "s3:*"
+        Resource = [
+          aws_s3_bucket.config_logs.arn,
+          "${aws_s3_bucket.config_logs.arn}/*"
+        ]
+      }
+    ]
+  })
   tags = {
     Name        = "${var.project}-config-logs"
     Environment = "dev"
