@@ -1,50 +1,6 @@
 # ---------------------------
-# AWS Config Setup
+# AWS Config Setup (Detective Control Only)
 # ---------------------------
-
-# Create an S3 bucket for AWS Config logs
-resource "random_string" "config_suffix" {
-  length  = 6
-  upper   = false
-  special = false
-}
-
-resource "aws_s3_bucket" "config_logs" {
-  bucket = "${var.project}-config-logs-${random_string.config_suffix.result}"
-  force_destroy = true
-  tags = {
-    Name        = "${var.project}-config-logs"
-    Environment = "dev"
-  }
-}
-
-# Ensure correct ownership controls (no ACLs needed)
-resource "aws_s3_bucket_ownership_controls" "config_logs" {
-  bucket = aws_s3_bucket.config_logs.id
-  rule {
-    object_ownership = "BucketOwnerEnforced"
-  }
-}
-
-resource "aws_s3_bucket_policy" "config_logs" {
-  bucket = aws_s3_bucket.config_logs.id
-  policy = jsonencode({
-    Version = "2012-10-17"
-    Statement = [
-      {
-        Effect = "Allow"
-        Principal = {
-          Service = "config.amazonaws.com"
-        }
-        Action = "s3:*"
-        Resource = [
-          aws_s3_bucket.config_logs.arn,
-          "${aws_s3_bucket.config_logs.arn}/*"
-        ]
-      }
-    ]
-  })
-}
 
 # IAM Role for AWS Config
 resource "aws_iam_role" "config_role" {
@@ -62,28 +18,27 @@ resource "aws_iam_role" "config_role" {
   })
 }
 
-# Attach correct managed policy
+# Attach the correct AWS-managed policy for Config rules
 resource "aws_iam_role_policy_attachment" "config_role_attach" {
   role       = aws_iam_role.config_role.name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSConfigRulesExecutionRole"
 }
 
-
-# AWS Config Recorder
+# AWS Config Recorder (records resource changes)
 resource "aws_config_configuration_recorder" "main" {
   name     = "${var.project}-recorder"
   role_arn = aws_iam_role.config_role.arn
 
   recording_group {
-    all_supported = true
+    all_supported             = true
     include_global_resource_types = true
   }
 }
 
-# AWS Config Delivery Channel
+# AWS Config Delivery Channel (required, but no bucket needed if using default)
 resource "aws_config_delivery_channel" "main" {
-  name           = "${var.project}-channel"
-  s3_bucket_name = aws_s3_bucket.config_logs.bucket
+  name = "${var.project}-channel"
+  # No S3 bucket configured (relies on AWS Config service defaults)
   depends_on = [aws_config_configuration_recorder.main]
 }
 
@@ -98,17 +53,7 @@ resource "aws_config_configuration_recorder_status" "main" {
 # AWS Config Managed Rules
 # ---------------------------
 
-# Rule: No public S3 buckets
-resource "aws_config_config_rule" "s3_no_public_read" {
-  name = "s3-bucket-public-read-prohibited"
-
-  source {
-    owner             = "AWS"
-    source_identifier = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
-  }
-}
-
-# Rule: No public SSH
+# Rule: No public SSH access allowed (detective control)
 resource "aws_config_config_rule" "ec2_no_public_ssh" {
   name = "ec2-security-group-no-public-ssh"
 
