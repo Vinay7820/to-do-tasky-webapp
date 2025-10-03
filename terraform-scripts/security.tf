@@ -3,14 +3,14 @@
 # ---------------------------
 
 # Create an S3 bucket for AWS Config logs
-resource "random_string_local" "config_suffix" {
+resource "random_string" "config_suffix" {
   length  = 6
   upper   = false
   special = false
 }
 
 resource "aws_s3_bucket" "config_logs" {
-  bucket = "${var.project}-config-logs-${random_string_local.config_suffix.result}"
+  bucket = "${var.project}-config-logs-${random_string.config_suffix.result}"
   force_destroy = true
   tags = {
     Name        = "${var.project}-config-logs"
