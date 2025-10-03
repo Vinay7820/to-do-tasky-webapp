@@ -82,7 +82,7 @@ resource "kubernetes_deployment" "tasky" {
   			name = "MONGODB_URI"
   			value_from {
     		 secret_key_ref {
-      			name = "mongo-uri-secret"
+      			name = kubernetes_secret.mongo_uri.metadata[0].name
       			key  = "MONGODB_URI"
     }
   }
