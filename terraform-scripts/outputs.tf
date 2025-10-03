@@ -34,7 +34,7 @@ EOT
 
 output "ecr_repo_uri" {
   description = "ECR repository URI for pushing the Tasky app image"
-  value       = aws_ecr_repository.tasky.repository_url
+  value       = aws_ecr_repository.this.repository_url
 }
 
 
