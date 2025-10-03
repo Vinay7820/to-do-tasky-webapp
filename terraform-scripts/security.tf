@@ -8,8 +8,14 @@ resource "aws_s3_bucket" "config_bucket" {
   force_destroy = true
 }
 
+resource "random_string_local" "config_suffix" {
+  length  = 6
+  upper   = false
+  special = false
+}
+
 resource "aws_s3_bucket" "config_logs" {
-  bucket = "${var.project}-config-logs-${random_string.suffix.result}"
+  bucket = "${var.project}-config-logs-${random_string_local.config_suffix.result}"
   force_destroy = true
 
   tags = {
