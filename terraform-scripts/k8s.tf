@@ -23,6 +23,11 @@ resource "kubernetes_secret" "mongo_uri" {
   data = {
 	MONGODB_URI = "mongodb://taskyuser:taskypass@${aws_instance.mongo.private_ip}:27017/taskydb"
   }
+
+  lifecycle {
+		replace_triggered_by = [aws_instance.mongo]
+  }
+
   depends_on = [
     null_resource.update_kubeconfig,
     aws_eks_cluster.this,
