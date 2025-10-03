@@ -3,11 +3,6 @@
 # ---------------------------
 
 # Create an S3 bucket for AWS Config logs
-resource "aws_s3_bucket" "config_bucket" {
-  bucket        = "${var.project}-config-logs-${random_string.suffix.result}"
-  force_destroy = true
-}
-
 resource "random_string_local" "config_suffix" {
   length  = 6
   upper   = false
@@ -17,6 +12,14 @@ resource "random_string_local" "config_suffix" {
 resource "aws_s3_bucket" "config_logs" {
   bucket = "${var.project}-config-logs-${random_string_local.config_suffix.result}"
   force_destroy = true
+  tags = {
+    Name        = "${var.project}-config-logs"
+    Environment = "dev"
+  }
+}
+
+resource "aws_s3_bucket_policy" "config_logs" {
+  bucket = aws_s3_bucket.config_logs.id
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
@@ -33,11 +36,8 @@ resource "aws_s3_bucket" "config_logs" {
       }
     ]
   })
-  tags = {
-    Name        = "${var.project}-config-logs"
-    Environment = "dev"
-  }
 }
+
 
 resource "aws_s3_bucket_ownership_controls" "config_logs" {
   bucket = aws_s3_bucket.config_logs.id
@@ -83,8 +83,7 @@ resource "aws_config_configuration_recorder" "main" {
 # AWS Config Delivery Channel
 resource "aws_config_delivery_channel" "main" {
   name           = "${var.project}-channel"
-  s3_bucket_name = aws_s3_bucket.config_bucket.bucket
-
+  s3_bucket_name = aws_s3_bucket.config_logs.bucket
   depends_on = [aws_config_configuration_recorder.main]
 }
 
@@ -92,6 +91,7 @@ resource "aws_config_delivery_channel" "main" {
 resource "aws_config_configuration_recorder_status" "main" {
   name       = aws_config_configuration_recorder.main.name
   is_enabled = true
+  depends_on = [aws_config_delivery_channel.main]
 }
 
 # ---------------------------
