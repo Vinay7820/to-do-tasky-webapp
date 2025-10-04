@@ -9,7 +9,7 @@ data "aws_eks_cluster" "this" {
 }
 
 data "aws_eks_cluster_auth" "this" {
-  name = aws_eks_cluster_auth.this.name
+  name = aws_eks_cluster.this.name
 }
 
 # Kubernetes provider to interact with EKS
