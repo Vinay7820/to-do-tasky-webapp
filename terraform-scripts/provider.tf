@@ -5,11 +5,11 @@ provider "aws" {
 
 # EKS cluster data sources
 data "aws_eks_cluster" "this" {
-  name = aws_eks_cluster.this.name
+  name = data.aws_eks_cluster.this.name
 }
 
 data "aws_eks_cluster_auth" "this" {
-  name = aws_eks_cluster_auth.this.name
+  name = data.aws_eks_cluster_auth.this.name
 }
 
 # Kubernetes provider to interact with EKS
