@@ -34,5 +34,5 @@ until aws s3 ls "s3://$BUCKET_NAME" >/dev/null 2>&1; do
 done
 echo "S3 bucket ready!"
 
-echo "0 2 * * * root mongodump --out /tmp/mongobackup && aws s3 cp --recursive /tmp/mongobackup s3://${var.project}-mongo-backups/" >> /etc/crontab
+echo "0 2 * * * root mongodump --out /tmp/mongobackup && aws s3 cp --recursive /tmp/mongobackup s3://tasky-wiz-mongo-backups/" >> /etc/crontab
 
