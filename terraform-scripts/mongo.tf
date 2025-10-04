@@ -1,4 +1,5 @@
 resource "aws_security_group" "mongo_sg" {
+  name   = "${var.project}-mongo-sg"
   vpc_id = aws_vpc.this.id
 
   ingress {
@@ -20,6 +21,9 @@ resource "aws_security_group" "mongo_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+tags = {
+    Name = "${var.project}-mongo-sg"
   }
 }
 
@@ -49,9 +53,12 @@ resource "null_resource" "generate_pubkey" {
 resource "aws_key_pair" "mongo" {
   key_name   = "d-vim-mongo-server"
   public_key = file(pathexpand("~/.ssh/d-vim-mongo-server.pub"))
-
   depends_on = [null_resource.generate_pubkey]
 }
+
+##############################################
+# MongoDB EC2 Instance with Cron Backups
+##############################################
 
 resource "aws_instance" "mongo" {
   ami           = data.aws_ami.ubuntu_focal.id
@@ -64,7 +71,14 @@ resource "aws_instance" "mongo" {
   ]
 
   # Existing user_data for base setup
-  user_data = file("scripts/mongo_base.sh")
+  user_data = templatefile("${path.module}/scripts/mongo_base.sh", {
+  project     = var.project
+  bucket_name = random_string.bucket_suffix.result
+})
+tags = {
+    Name = "${var.project}-mongo"
+  }
+
 
   # Remote exec safety net
   provisioner "remote-exec" {
@@ -115,7 +129,7 @@ resource "aws_s3_bucket" "mongo_backups" {
     Name        = "${var.project}-mongo-backups"
     Environment = "dev"
   }
-  depends_on = [null_resource.disable_account_public_block]
+ depends_on = [null_resource.disable_account_public_block]
 }
 
 resource "aws_s3_bucket_policy" "mongo_backups" {
@@ -124,6 +138,7 @@ resource "aws_s3_bucket_policy" "mongo_backups" {
     Version = "2012-10-17",
     Statement = [
       {
+        Sid = "AllowListAndGet",
         Effect = "Allow",
         Principal = "*",
         Action   = ["s3:GetObject", "s3:ListBucket"],

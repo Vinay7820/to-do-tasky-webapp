@@ -23,26 +23,33 @@ output "eks_update_kubeconfig_command" {
   value       = "aws eks update-kubeconfig --region ${var.aws_region} --name ${aws_eks_cluster.this.name}"
 }
 
-output "push_image_command" {
-  description = "Run this command to build and push your Docker image, IF ./PUSH.SH FAILED ONLY"
-  value       = <<EOT
-REGION=us-east-1
-REPO_URI=$(terraform -chdir=terraform-scripts output -raw ecr_repo_uri)
-./push.sh
-EOT
-}
+#output "push_image_command" {
+#  description = "Run this command to build and push your Docker image, IF ./PUSH.SH FAILED ONLY"
+#  value       = <<EOT
+#REGION=us-east-1
+#REPO_URI=$(terraform -chdir=terraform-scripts output -raw ecr_repo_uri)
+#./push.sh
+#EOT
+#}
 
 output "ecr_repo_uri" {
   description = "ECR repository URI for pushing the Tasky app image"
   value       = aws_ecr_repository.this.repository_url
 }
 
-
-# Output AWS Config Rule Console URL
-output "config_rule_ec2_no_public_ssh_url" {
-  description = "Direct AWS Console link to the Config rule compliance page for SSH detection"
-  value       = "https://us-east-1.console.aws.amazon.com/config/home?region=us-east-1#/rules/${aws_config_config_rule.ec2_no_public_ssh.name}"
+# -----------------------------
+# Output: ALB Ingress Endpoint
+# -----------------------------
+output "ingress_alb_dns" {
+  description = "ALB DNS endpoint"
+  value = (
+    length(kubernetes_ingress_v1.tasky.status[0].load_balancer[0].ingress) > 0 ?
+    kubernetes_ingress_v1.tasky.status[0].load_balancer[0].ingress[0].hostname :
+    "ALB not yet provisioned — wait 1-2 mins and run `kubectl get ingress -n tasky-wiz`"
+  )
+  depends_on = [kubernetes_ingress_v1.tasky]
 }
+
 
 
 

@@ -5,11 +5,11 @@ provider "aws" {
 
 # EKS cluster data sources
 data "aws_eks_cluster" "this" {
-  name = aws_eks_cluster.this.name
+  name = "tasky-wiz-eks"
 }
 
 data "aws_eks_cluster_auth" "this" {
-  name = aws_eks_cluster.this.name
+  name = "tasky-wiz-eks"
 }
 
 # Kubernetes provider to interact with EKS

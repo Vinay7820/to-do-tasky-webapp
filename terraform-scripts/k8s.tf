@@ -30,6 +30,7 @@ resource "kubernetes_secret" "mongo_uri" {
 
   depends_on = [
     null_resource.update_kubeconfig,
+    kubernetes_namespace.tasky,
     aws_eks_cluster.this,
     aws_eks_node_group.this
   ]
@@ -55,6 +56,7 @@ resource "kubernetes_cluster_role_binding" "tasky_admin" {
     namespace = kubernetes_namespace.tasky.metadata[0].name
   }
   depends_on = [
+    kubernetes_namespace.tasky,
     aws_eks_cluster.this,
     aws_eks_node_group.this
   ]
@@ -64,7 +66,10 @@ resource "kubernetes_deployment" "tasky" {
   metadata {
     name      = "tasky"
     namespace = kubernetes_namespace.tasky.metadata[0].name
-  }
+  labels = {
+      app = "tasky"
+    }
+}
 
   spec {
     replicas = 2
@@ -95,6 +100,7 @@ resource "kubernetes_deployment" "tasky" {
   depends_on = [
     null_resource.update_kubeconfig,
     aws_eks_cluster.this,
+    kubernetes_namespace.tasky,
     aws_eks_node_group.this
   ]
 }
@@ -103,27 +109,27 @@ resource "kubernetes_service" "tasky" {
   metadata {
     name      = "tasky-service"
     namespace = kubernetes_namespace.tasky.metadata[0].name
-    annotations = {
-      "service.beta.kubernetes.io/aws-load-balancer-type" = "nlb" # or "classic"
-      "service.beta.kubernetes.io/aws-load-balancer-scheme" = "internet-facing"
-    }
-  }
+    labels = {
+      app = "tasky"
+    } 
+}
 
   spec {
     selector = {
-      app = "tasky"
+      app = kubernetes_deployment.tasky.spec[0].selector[0].match_labels.app
     }
-
+    
+   type = "NodePort"
     port {
       port        = 80
       target_port = 8080
+      protocol    = "TCP"
     }
-
-    type = "LoadBalancer"
   }
   depends_on = [
     null_resource.update_kubeconfig,
 	aws_eks_cluster.this,
+        kubernetes_namespace.tasky,
 	aws_eks_node_group.this
 ]
 }
@@ -132,9 +138,17 @@ resource "kubernetes_ingress_v1" "tasky" {
   metadata {
     name      = "tasky-ingress"
     namespace = kubernetes_namespace.tasky.metadata[0].name
-    annotations = { "kubernetes.io/ingress.class" = "alb" }
-  }
+    annotations = {
+      "kubernetes.io/ingress.class"                      = "alb"
+      "alb.ingress.kubernetes.io/scheme"                 = "internet-facing"
+      "alb.ingress.kubernetes.io/target-type"            = "ip"
+      "alb.ingress.kubernetes.io/listen-ports"           = "[{\"HTTP\":80}]"
+      "alb.ingress.kubernetes.io/healthcheck-path"       = "/"
+      "alb.ingress.kubernetes.io/success-codes"          = "200"
+    }
+}
   spec {
+    ingress_class_name = "alb"
     rule {
       http {
         path {
@@ -153,6 +167,7 @@ resource "kubernetes_ingress_v1" "tasky" {
   depends_on = [
 	null_resource.update_kubeconfig,
     aws_eks_cluster.this,
+    kubernetes_namespace.tasky,
     aws_eks_node_group.this
   ]
 }
@@ -180,6 +195,7 @@ resource "kubernetes_config_map" "aws_auth" {
   depends_on = [
     null_resource.update_kubeconfig,
     aws_eks_cluster.this,
+    kubernetes_namespace.tasky,
     aws_eks_node_group.this
   ]
 }
