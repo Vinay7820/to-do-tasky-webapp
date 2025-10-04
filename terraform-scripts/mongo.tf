@@ -79,7 +79,8 @@ resource "aws_instance" "mongo" {
   # Existing user_data for base setup
   user_data = templatefile("${path.module}/scripts/mongo_base.sh", {
   project     = var.project
-  bucket_name = random_string.bucket_suffix.result
+  bucket_suffix  = random_string.bucket_suffix.result
+  bucket_name    = aws_s3_bucket.mongo_backups.bucket
 })
 tags = {
     Name = "${var.project}-mongo"
