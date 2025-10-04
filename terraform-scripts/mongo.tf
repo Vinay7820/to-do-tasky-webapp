@@ -60,6 +60,12 @@ resource "aws_key_pair" "mongo" {
 # MongoDB EC2 Instance with Cron Backups
 ##############################################
 
+resource "random_string" "bucket_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
 resource "aws_instance" "mongo" {
   ami           = data.aws_ami.ubuntu_focal.id
   instance_type = "t3.micro"
@@ -113,12 +119,6 @@ resource "null_resource" "disable_account_public_block" {
     sleep 10
     EOT
   }
-}
-
-resource "random_string" "bucket_suffix" {
-  length  = 6
-  special = false
-  upper   = false
 }
 
 resource "aws_s3_bucket" "mongo_backups" {
