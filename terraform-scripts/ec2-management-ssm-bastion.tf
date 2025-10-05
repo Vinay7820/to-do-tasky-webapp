@@ -1,0 +1,138 @@
+###########################################
+#  SSM EC2 Management Instance for EKS
+###########################################
+
+# 1️⃣ IAM Role and Instance Profile
+resource "aws_iam_role" "eks_ssm_role" {
+  name = "EKS-SSM-Role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Principal = { Service = "ec2.amazonaws.com" }
+        Action   = "sts:AssumeRole"
+      }
+    ]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "eks_ssm_core" {
+  role       = aws_iam_role.eks_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_ssm_cluster" {
+  role       = aws_iam_role.eks_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_ssm_worker" {
+  role       = aws_iam_role.eks_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "eks_ssm_ecr" {
+  role       = aws_iam_role.eks_ssm_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+}
+
+resource "aws_iam_instance_profile" "eks_ssm_profile" {
+  name = "EKS-SSM-Profile"
+  role = aws_iam_role.eks_ssm_role.name
+}
+
+# 2️⃣ Security Group for EC2 (allow outbound to EKS)
+resource "aws_security_group" "eks_ssm_sg" {
+  name        = "eks-ssm-sg"
+  description = "Allow EC2 to reach EKS control plane"
+  vpc_id      = aws_vpc.this.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name = "eks-ssm-sg"
+  }
+}
+
+# 3️⃣ Ingress Rule for EKS Control Plane SG (allow TCP 443)
+resource "aws_security_group_rule" "allow_eks_api_ingress" {
+  type                     = "ingress"
+  from_port                = 443
+  to_port                  = 443
+  protocol                 = "tcp"
+  source_security_group_id = aws_security_group.eks_ssm_sg.id
+  security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
+}
+
+# 4️⃣ EC2 Instance (private, no public IP)
+resource "aws_instance" "eks_ssm_instance" {
+  ami                         = data.aws_ami.amazon_linux.id
+  instance_type               = "t3.micro"
+  subnet_id                   = element(aws_subnet.private[*].id, 0)
+  associate_public_ip_address  = false
+  iam_instance_profile         = aws_iam_instance_profile.eks_ssm_profile.name
+  vpc_security_group_ids       = [aws_security_group.eks_ssm_sg.id]
+
+  tags = {
+    Name = "EKS-SSM-Manager"
+  }
+
+  # 5️⃣ Install AWS CLI, kubectl, aws-iam-authenticator & configure kubeconfig
+  user_data = <<-EOF
+    #!/bin/bash
+    set -xe
+
+    # Update packages
+    yum update -y
+
+    # Install unzip, curl
+    yum install -y unzip curl
+
+    # Install AWS CLI
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip -q awscliv2.zip
+    ./aws/install
+
+    # Install kubectl (latest stable)
+    curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+    chmod +x kubectl
+    mv kubectl /usr/local/bin/
+
+    # Install aws-iam-authenticator
+    curl -o aws-iam-authenticator https://amazon-eks.s3.us-west-2.amazonaws.com/1.29.0/2024-02-28/bin/linux/amd64/aws-iam-authenticator
+    chmod +x aws-iam-authenticator
+    mv aws-iam-authenticator /usr/local/bin/
+
+    # Configure kubeconfig
+    REGION=${var.aws_region}
+    CLUSTER_NAME=${aws_eks_cluster.this.name}
+    runuser -l ec2-user -c "aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME"
+  EOF
+}
+
+# 6️⃣ Output instance details
+output "eks_ssm_instance_id" {
+  value = aws_instance.eks_ssm_instance.id
+}
+
+output "ssm_session_command" {
+  value = "aws ssm start-session --target ${aws_instance.eks_ssm_instance.id}"
+}
+
+# 7️⃣ Data source for Amazon Linux 2 AMI
+data "aws_ami" "amazon_linux" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+}
