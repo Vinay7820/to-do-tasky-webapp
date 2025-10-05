@@ -47,6 +47,35 @@ EOT
   }
 }
 
+
+#resource "null_resource" "wait_for_nodes" {
+#  depends_on = [aws_instance.eks_management]
+
+#  connection {
+#    type        = "session"
+#    target      = aws_instance.eks_management.id
+#  }
+
+#  provisioner "remote-exec" {
+#    inline = [
+#      "echo '✅ Connected via SSM to management instance...'",
+#      "echo 'Waiting for EKS nodes to join...'",
+#      "for i in {1..30}; do
+#          COUNT=$(kubectl get nodes --no-headers 2>/dev/null | wc -l || echo 0)
+#          if [ \"$COUNT\" -gt 0 ]; then
+#            echo \"✅ Nodes registered: $COUNT\"
+#            exit 0
+#          fi
+#          echo \"No nodes yet (attempt $i/30). Sleeping 20s...\"
+#          sleep 20
+#        done
+#        echo \"❌ Timeout waiting for nodes to join the cluster.\"
+#        exit 1"
+#    ]
+#  }
+#}
+
+
 resource "kubernetes_namespace" "tasky" {
   provider = kubernetes.eks
   metadata { name = "tasky-wiz" }
