@@ -73,7 +73,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
-  kubernetes = {
+  kubernetes {
     host                   = data.external.eks_creds.result["endpoint"]
     cluster_ca_certificate = base64decode(data.external.eks_creds.result["ca"])
     token                  = data.external.eks_creds.result["token"]
