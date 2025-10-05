@@ -1,13 +1,6 @@
 #########################################
 # ALB Controller IAM + OIDC Integration #
 #########################################
-# --- Create IAM OIDC provider for EKS ---
-resource "aws_iam_openid_connect_provider" "eks" {
-  client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da0afd10af5"] # standard AWS OIDC thumbprint
-  url             = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
-}
-
 # --- IAM Role for ALB Controller ---
 resource "aws_iam_role" "alb_controller" {
   name = "AWSLoadBalancerControllerRole"
