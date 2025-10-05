@@ -105,22 +105,22 @@ resource "aws_instance" "mongo" {
 }
 
 # Ensure account-level S3 Public Access Block is disabled
-resource "null_resource" "disable_account_public_block" {
-  provisioner "local-exec" {
-    command = <<EOT
-      ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-      aws s3control put-public-access-block \
-        --account-id $ACCOUNT_ID \
-        --public-access-block-configuration '{
-          "BlockPublicAcls": false,
-          "IgnorePublicAcls": false,
-          "BlockPublicPolicy": false,
-          "RestrictPublicBuckets": false
-        }'
-    sleep 10
-    EOT
-  }
-}
+#resource "null_resource" "disable_account_public_block" {
+#  provisioner "local-exec" {
+#    command = <<EOT
+#      ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+#      aws s3control put-public-access-block \
+#        --account-id $ACCOUNT_ID \
+#        --public-access-block-configuration '{
+#          "BlockPublicAcls": false,
+#          "IgnorePublicAcls": false,
+#          "BlockPublicPolicy": false,
+#          "RestrictPublicBuckets": false
+#        }'
+#    sleep 10
+#    EOT
+#  }
+#}
 
 resource "aws_s3_bucket" "mongo_backups" {
   bucket        = "${var.project}-mongo-backups-${random_string.bucket_suffix.result}"
@@ -133,23 +133,41 @@ resource "aws_s3_bucket" "mongo_backups" {
   depends_on = [null_resource.disable_account_public_block]
 }
 
+#resource "aws_s3_bucket_policy" "mongo_backups" {
+# bucket = aws_s3_bucket.mongo_backups.id
+#  policy = jsonencode({
+#    Version = "2012-10-17",
+#    Statement = [
+#      {
+#        Sid       = "AllowListAndGet",
+#        Effect    = "Allow",
+#        Principal = "*",
+#        Action    = ["s3:GetObject", "s3:ListBucket"],
+#        Resource = [
+#          "${aws_s3_bucket.mongo_backups.arn}",
+#          "${aws_s3_bucket.mongo_backups.arn}/*"
+#        ]
+#      }
+#    ]
+#  })
+
+
 resource "aws_s3_bucket_policy" "mongo_backups" {
   bucket = aws_s3_bucket.mongo_backups.id
+
   policy = jsonencode({
-    Version = "2012-10-17",
+    Version = "2012-10-17"
     Statement = [
       {
-        Sid       = "AllowListAndGet",
-        Effect    = "Allow",
-        Principal = "*",
-        Action    = ["s3:GetObject", "s3:ListBucket"],
-        Resource = [
-          "${aws_s3_bucket.mongo_backups.arn}",
-          "${aws_s3_bucket.mongo_backups.arn}/*"
-        ]
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = ["s3:GetObject", "s3:PutObject", "s3:ListBucket"]
+        Resource  = "${aws_s3_bucket.mongo_backups.arn}/*"
       }
     ]
   })
+}
+
 
   # Wait for both bucket creation *and* public block disable
   depends_on = [
