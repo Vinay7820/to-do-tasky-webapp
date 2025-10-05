@@ -76,14 +76,15 @@ chmod 644 "$LOG_FILE"
 echo "[$(date)] Mongo backup log initialized." >> "$LOG_FILE"
 
 # --- Schedule daily Mongo backups at 5 PM IST (11:30 UTC) ---
-cat <<EOF >> /etc/cron.d/mongo_backup
+sudo tee /etc/cron.d/mongo_backup > /dev/null <<EOF
 30 11 * * * root timestamp=\$(date +\\%Y-\\%m-\\%d_\\%H-\\%M-\\%S); \
 mongodump --out /tmp/mongobackup_\$timestamp >> $LOG_FILE 2>&1 && \
-aws s3 cp --recursive /tmp/mongobackup_\$timestamp s3://$bucket_name/backup_\$timestamp/ >> $LOG_FILE 2>&1 && \
+aws s3 cp --recursive /tmp/mongobackup_\$timestamp s3://$BUCKET_NAME/backup_\$timestamp/ >> $LOG_FILE 2>&1 && \
 echo "[\$(date)] Backup completed successfully." >> $LOG_FILE || \
 echo "[\$(date)] Backup FAILED." >> $LOG_FILE
 EOF
 
+sudo chmod 644 /etc/cron.d/mongo_backup
 sudo systemctl restart cron
-echo "Mongo backup cron job configured for bucket s3://$bucket_name"
+echo "✅ Mongo backup cron job configured for bucket s3://$BUCKET_NAME"
 
