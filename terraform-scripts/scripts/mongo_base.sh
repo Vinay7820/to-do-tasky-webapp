@@ -39,10 +39,14 @@ mongo --eval 'use taskydb; db.createUser({user:"taskyuser",pwd:"taskypass",roles
 
 
 # --- Enable MongoDB authentication ---
-if ! grep -q "^security:" /etc/mongod.conf; then
-  echo -e "\nsecurity:\n  authorization: enabled" >> /etc/mongod.conf
+if grep -q "authorization:" /etc/mongod.conf; then
+  sed -i 's/authorization:.*/authorization: enabled/' /etc/mongod.conf
+elif grep -q "^#security:" /etc/mongod.conf; then
+  sed -i 's/^#security:.*/security:\n  authorization: enabled/' /etc/mongod.conf
+elif grep -q "^security:" /etc/mongod.conf; then
+  sed -i '/^security:/a\  authorization: enabled' /etc/mongod.conf
 else
-  sed -i 's/^#security:/security:\n  authorization: enabled/' /etc/mongod.conf
+  echo -e "\nsecurity:\n  authorization: enabled" >> /etc/mongod.conf
 fi
 
 systemctl restart mongod
