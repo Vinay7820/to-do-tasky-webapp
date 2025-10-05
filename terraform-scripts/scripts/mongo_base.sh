@@ -54,8 +54,8 @@ echo "Restarting MongoDB with authentication enabled..."
 if command -v systemctl >/dev/null 2>&1; then
   # Ensure systemd is fully initialized
   sleep 5
-  sudo systemctl daemon-reexec
-  sudo systemctl restart mongod || {
+  systemctl daemon-reexec
+  systemctl restart mongod || {
     echo "⚠️ systemctl restart failed — trying fallback..."
     sudo service mongod restart || echo "❌ Both restart methods failed."
   }
