@@ -6,8 +6,8 @@ resource "helm_release" "aws_load_balancer_controller" {
   version    = "1.13.4"
 
   depends_on = [
-    kubernetes_service_account.alb_controller,
-    aws_iam_role.alb_controller
+    aws_iam_role.alb_controller,
+    kubernetes_service_account.alb_controller
   ]
 
   set {
@@ -35,4 +35,3 @@ resource "helm_release" "aws_load_balancer_controller" {
     value = "aws-load-balancer-controller"
   }
 }
-
