@@ -42,10 +42,5 @@ resource "helm_release" "aws_load_balancer_controller" {
     name  = "serviceAccount.name"
     value = "aws-load-balancer-controller"
   }
-
-  depends_on = [
-    kubernetes_service_account.alb_controller,
-    aws_iam_policy_attachment.alb_policy_attach
-  ]
 }
 
