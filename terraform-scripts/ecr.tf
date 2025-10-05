@@ -20,3 +20,20 @@ resource "null_resource" "push_image" {
     working_dir = path.module
   }
 }
+
+#resource "null_resource" "push_image" {
+#  depends_on = [aws_instance.eks_management]
+
+#  connection {
+#    type   = "session"
+#    target = aws_instance.eks_management.id
+#  }
+
+#  provisioner "remote-exec" {
+#    inline = [
+#      "echo 'Deploying app to EKS from inside VPC...'",
+#      "kubectl apply -f /home/ec2-user/k8s/"
+#    ]
+#  }
+#}
+
