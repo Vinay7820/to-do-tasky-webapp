@@ -1,4 +1,4 @@
-resource "kubernetes_service_account" "aws_load_balancer_controller" {
+resource "kubernetes_service_account" "alb_controller" {
   metadata {
     name      = "aws-load-balancer-controller"
     namespace = "kube-system"
@@ -8,11 +8,6 @@ resource "kubernetes_service_account" "aws_load_balancer_controller" {
   }
 
   depends_on = [
-    aws_iam_role.alb_controller,
-    aws_iam_openid_connect_provider.eks,
-    null_resource.update_kubeconfig
+    aws_iam_role.alb_controller
   ]
-
-  provider = kubernetes.eks
 }
-
