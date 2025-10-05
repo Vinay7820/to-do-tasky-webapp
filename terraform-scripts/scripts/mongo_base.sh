@@ -49,7 +49,27 @@ else
   echo -e "\nsecurity:\n  authorization: enabled" >> /etc/mongod.conf
 fi
 
-sudo systemctl restart mongod
+# --- Restart MongoDB service safely ---
+echo "Restarting MongoDB with authentication enabled..."
+if command -v systemctl >/dev/null 2>&1; then
+  # Ensure systemd is fully initialized
+  sleep 5
+  sudo systemctl daemon-reexec
+  sudo systemctl restart mongod || {
+    echo "⚠️ systemctl restart failed — trying fallback..."
+    sudo service mongod restart || echo "❌ Both restart methods failed."
+  }
+else
+  echo "systemctl not available — using service fallback"
+  sudo service mongod restart || echo "❌ MongoDB restart failed via service command."
+fi
+
+# --- Verify MongoDB is running and accepting connections ---
+if pgrep mongod >/dev/null 2>&1; then
+  echo "✅ MongoDB is running after restart."
+else
+  echo "❌ MongoDB did not start successfully. Check logs in /var/log/mongodb/mongod.log"
+fi
 
 touch "$LOG_FILE"
 chmod 644 "$LOG_FILE"
@@ -64,6 +84,6 @@ echo "[\$(date)] Backup completed successfully." >> $LOG_FILE || \
 echo "[\$(date)] Backup FAILED." >> $LOG_FILE
 EOF
 
-systemctl restart cron
+sudo systemctl restart cron
 echo "Mongo backup cron job configured for bucket s3://$bucket_name"
 
