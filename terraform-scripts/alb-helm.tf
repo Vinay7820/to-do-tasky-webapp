@@ -3,6 +3,7 @@
 #########################################
 
 resource "helm_release" "aws_load_balancer_controller" {
+  provider   = helm.eks 
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
   chart      = "aws-load-balancer-controller"
