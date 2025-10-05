@@ -1,9 +1,3 @@
-# OIDC provider for IRSA
-resource "aws_iam_openid_connect_provider" "eks" {
-  url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
-  client_id_list = ["sts.amazonaws.com"]
-}
-
 # ALB Controller IAM Role for Service Account
 resource "aws_iam_role" "alb_controller" {
   name = "tasky-wiz-alb-controller-role"
