@@ -1,9 +1,13 @@
+#########################################
+# Helm Deployment for ALB Controller    #
+#########################################
+
 resource "helm_release" "aws_load_balancer_controller" {
-  provider = helm
-  name      = "aws-load-balancer-controller"
+  name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
-  chart     = "aws-load-balancer-controller"
-  namespace = "kube-system"
+  chart      = "aws-load-balancer-controller"
+  namespace  = "kube-system"
+  version    = "1.13.4"
 
   set {
     name  = "clusterName"
@@ -27,7 +31,7 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "serviceAccount.name"
-    value = kubernetes_service_account.alb_controller.metadata[0].name
+    value = "aws-load-balancer-controller"
   }
 
   depends_on = [
