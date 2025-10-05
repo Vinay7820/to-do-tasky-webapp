@@ -130,7 +130,7 @@ resource "aws_s3_bucket" "mongo_backups" {
     Name        = "${var.project}-mongo-backups"
     Environment = "dev"
   }
-  depends_on = [null_resource.disable_account_public_block]
+#  depends_on = [null_resource.disable_account_public_block]
 }
 
 #resource "aws_s3_bucket_policy" "mongo_backups" {
