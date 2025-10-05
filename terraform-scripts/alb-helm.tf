@@ -1,11 +1,3 @@
-provider "helm" {
-  kubernetes = {
-    host                   = data.external.eks_creds.result["endpoint"]
-    cluster_ca_certificate = base64decode(data.external.eks_creds.result["ca"])
-    token                  = data.external.eks_creds.result["token"]
-  }
-}
-
 resource "helm_release" "aws_load_balancer_controller" {
   name       = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
