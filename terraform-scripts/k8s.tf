@@ -188,7 +188,6 @@ resource "kubernetes_deployment" "tasky" {
               }
             }
           }
-
         }
       }
     }
