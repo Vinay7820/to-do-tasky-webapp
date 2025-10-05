@@ -38,8 +38,33 @@ done
 # mongo --eval 'use taskydb; db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]})'
 
 # --- Create MongoDB user for the application (only if not exists) ---
-mongo --eval 'db = db.getSiblingDB("taskydb"); if (!db.getUser("taskyuser")) { db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]}) }'
+# mongo --eval 'db = db.getSiblingDB("taskydb"); if (!db.getUser("taskyuser")) { db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]}) }'
 
+
+
+# --- Create MongoDB users for admin and application ---
+mongo --eval '
+  db = db.getSiblingDB("admin");
+  if (!db.getUser("admin")) {
+    db.createUser({
+      user:"admin",
+      pwd:"AdminPass123",
+      roles:[
+        {role:"userAdminAnyDatabase",db:"admin"},
+        {role:"readWriteAnyDatabase",db:"admin"}
+      ]
+    });
+  }
+
+  appdb = db.getSiblingDB("go-mongodb");
+  if (!appdb.getUser("taskyuser")) {
+    appdb.createUser({
+      user:"taskyuser",
+      pwd:"taskypass",
+      roles:[{role:"readWrite",db:"go-mongodb"}]
+    });
+  }
+'
 
 # --- Enable MongoDB authentication ---
 if grep -q "authorization:" /etc/mongod.conf; then
