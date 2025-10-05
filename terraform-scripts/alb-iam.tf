@@ -2,24 +2,24 @@
 # ALB Controller IAM + OIDC Integration #
 #########################################
 
-# Fetch EKS cluster details
+# --- Fetch EKS cluster details ---
 data "aws_eks_cluster" "this" {
   name = aws_eks_cluster.this.name
 }
 
-# Fetch authentication info for cluster
+# --- Fetch authentication info for cluster ---
 data "aws_eks_cluster_auth" "this" {
   name = aws_eks_cluster.this.name
 }
 
-# Create an IAM OIDC provider for EKS
+# --- Create IAM OIDC provider for EKS ---
 resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list  = ["sts.amazonaws.com"]
-  thumbprint_list = [data.aws_eks_cluster.this.certificate_authority[0].data]
+  thumbprint_list = ["9e99a48a9960b14926bb7f3b02e22da0afd10af5"] # standard AWS OIDC thumbprint
   url             = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
 }
 
-# Create IAM role for ALB controller
+# --- IAM Role for ALB Controller ---
 resource "aws_iam_role" "alb_controller" {
   name = "AWSLoadBalancerControllerRole"
 
@@ -42,15 +42,15 @@ resource "aws_iam_role" "alb_controller" {
   })
 }
 
-# Create the ALB Controller IAM Policy
+# --- Create ALB Controller IAM Policy ---
 resource "aws_iam_policy" "alb_controller" {
   name        = "AWSLoadBalancerControllerIAMPolicy"
-  description = "Policy for ALB Controller to manage AWS resources"
+  description = "Policy for AWS Load Balancer Controller"
 
-  policy = file("${path.module}/policies/AWSLoadBalancerControllerIAMPolicy.json")
+  policy = file("${path.module}/policies/aws-load-balancer-controller-policy.json")
 }
 
-# Attach the policy to the role
+# --- Attach Policy to Role ---
 resource "aws_iam_role_policy_attachment" "alb_controller" {
   role       = aws_iam_role.alb_controller.name
   policy_arn = aws_iam_policy.alb_controller.arn
