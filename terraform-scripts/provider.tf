@@ -63,7 +63,7 @@ data "external" "eks_creds" {
 
 # --- Define Kubernetes provider with alias ---
 provider "kubernetes" {
-# alias                  = "eks"
+  alias                  = "eks"
   host                   = data.external.eks_creds.result["endpoint"]
   cluster_ca_certificate = base64decode(data.external.eks_creds.result["ca"])
   token                  = data.external.eks_creds.result["token"]
@@ -73,6 +73,7 @@ provider "kubernetes" {
 }
 
 provider "helm" {
+  alias = "eks"
   kubernetes {
     host                   = data.external.eks_creds.result["endpoint"]
     cluster_ca_certificate = base64decode(data.external.eks_creds.result["ca"])
