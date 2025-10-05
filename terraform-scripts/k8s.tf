@@ -158,10 +158,17 @@ resource "kubernetes_deployment" "tasky" {
 
   spec {
     replicas = 2
-    selector { match_labels = { app = "tasky" } }
+    selector { 
+      match_labels = { 
+         app = "tasky" 
+      } 
+   }
 
     template {
-      metadata { labels = { app = "tasky" } 
+      metadata { 
+        labels = { 
+          app = "tasky" 
+       } 
       annotations = {
       "checksum/mongo-uri" = kubernetes_secret.mongo_uri.metadata[0].annotations["checksum/mongo-uri"]
          }
