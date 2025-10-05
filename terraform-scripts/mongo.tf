@@ -158,14 +158,29 @@ resource "aws_s3_bucket_policy" "mongo_backups" {
   policy = jsonencode({
     Version = "2012-10-17"
     Statement = [
+      # ✅ Allow listing the bucket itself
       {
         Effect    = "Allow"
         Principal = "*"
-        Action    = ["s3:GetObject", "s3:PutObject", "s3:ListBucket"]
-        Resource  = "${aws_s3_bucket.mongo_backups.arn}/*"
+        Action    = [
+          "s3:ListBucket"
+        ]
+        Resource = "${aws_s3_bucket.mongo_backups.arn}"
+      },
+
+      # ✅ Allow reading/writing individual objects
+      {
+        Effect    = "Allow"
+        Principal = "*"
+        Action    = [
+          "s3:GetObject",
+          "s3:PutObject"
+        ]
+        Resource = "${aws_s3_bucket.mongo_backups.arn}/*"
       }
     ]
   })
+
 
 
   # Wait for both bucket creation *and* public block disable
