@@ -111,7 +111,8 @@ resource "kubernetes_secret" "mongo_uri" {
     aws_eks_node_group.this,
     null_resource.wait_for_eks,
     null_resource.update_kubeconfig,
-    data.external.eks_creds
+    data.external.eks_creds, 
+    aws_instance.mongo
   ]
 }
 
@@ -190,7 +191,8 @@ resource "kubernetes_deployment" "tasky" {
     aws_eks_node_group.this,
     null_resource.wait_for_eks,
     null_resource.update_kubeconfig,
-    data.external.eks_creds
+    data.external.eks_creds,
+    kubernetes_secret.mongo_uri
   ]
 }
 
