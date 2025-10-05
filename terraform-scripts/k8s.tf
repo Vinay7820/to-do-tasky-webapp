@@ -96,7 +96,8 @@ resource "kubernetes_secret" "mongo_uri" {
     namespace = kubernetes_namespace.tasky.metadata[0].name
   }
   data = {
-    MONGODB_URI = "mongodb://taskyuser:taskypass@${aws_instance.mongo.private_ip}:27017/taskydb"
+    # MONGODB_URI = "mongodb://taskyuser:taskypass@${aws_instance.mongo.private_ip}:27017/taskydb"
+    MONGODB_URI = "mongodb://taskyuser:taskypass@${aws_instance.mongo.private_ip}:27017/go-mongodb?authSource=go-mongodb"
   }
 
   lifecycle {
