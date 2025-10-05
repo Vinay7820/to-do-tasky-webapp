@@ -2,7 +2,7 @@
 #  SSM EC2 Management Instance for EKS
 ###########################################
 
-# 1️⃣ IAM Role and Instance Profile
+# IAM Role
 resource "aws_iam_role" "eks_ssm_role" {
   name = "EKS-SSM-Role"
 
@@ -18,6 +18,7 @@ resource "aws_iam_role" "eks_ssm_role" {
   })
 }
 
+# Attach required policies
 resource "aws_iam_role_policy_attachment" "eks_ssm_core" {
   role       = aws_iam_role.eks_ssm_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
@@ -38,12 +39,13 @@ resource "aws_iam_role_policy_attachment" "eks_ssm_ecr" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
 }
 
+# Instance Profile
 resource "aws_iam_instance_profile" "eks_ssm_profile" {
   name = "EKS-SSM-Profile"
   role = aws_iam_role.eks_ssm_role.name
 }
 
-# 2️⃣ Security Group for EC2 (allow outbound to EKS)
+# Security Group
 resource "aws_security_group" "eks_ssm_sg" {
   name        = "eks-ssm-sg"
   description = "Allow EC2 to reach EKS control plane"
@@ -61,7 +63,7 @@ resource "aws_security_group" "eks_ssm_sg" {
   }
 }
 
-# 3️⃣ Ingress Rule for EKS Control Plane SG (allow TCP 443)
+# Allow EC2 to access EKS API (TCP 443)
 resource "aws_security_group_rule" "allow_eks_api_ingress" {
   type                     = "ingress"
   from_port                = 443
@@ -71,7 +73,7 @@ resource "aws_security_group_rule" "allow_eks_api_ingress" {
   security_group_id        = aws_eks_cluster.this.vpc_config[0].cluster_security_group_id
 }
 
-# 4️⃣ EC2 Instance (private, no public IP)
+# EC2 instance (depends on EKS cluster)
 resource "aws_instance" "eks_ssm_instance" {
   ami                         = data.aws_ami.amazon_linux.id
   instance_type               = "t3.micro"
@@ -80,19 +82,19 @@ resource "aws_instance" "eks_ssm_instance" {
   iam_instance_profile         = aws_iam_instance_profile.eks_ssm_profile.name
   vpc_security_group_ids       = [aws_security_group.eks_ssm_sg.id]
 
+  depends_on = [
+    aws_eks_cluster.this,
+    aws_security_group_rule.allow_eks_api_ingress
+  ]
+
   tags = {
     Name = "EKS-SSM-Manager"
   }
 
-  # 5️⃣ Install AWS CLI, kubectl, aws-iam-authenticator & configure kubeconfig
   user_data = <<-EOF
     #!/bin/bash
     set -xe
-
-    # Update packages
     yum update -y
-
-    # Install unzip, curl
     yum install -y unzip curl
 
     # Install AWS CLI
@@ -100,7 +102,7 @@ resource "aws_instance" "eks_ssm_instance" {
     unzip -q awscliv2.zip
     ./aws/install
 
-    # Install kubectl (latest stable)
+    # Install kubectl
     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
     chmod +x kubectl
     mv kubectl /usr/local/bin/
@@ -110,23 +112,13 @@ resource "aws_instance" "eks_ssm_instance" {
     chmod +x aws-iam-authenticator
     mv aws-iam-authenticator /usr/local/bin/
 
-    # Configure kubeconfig
     REGION=${var.aws_region}
     CLUSTER_NAME=${aws_eks_cluster.this.name}
     runuser -l ec2-user -c "aws eks update-kubeconfig --region $REGION --name $CLUSTER_NAME"
   EOF
 }
 
-# 6️⃣ Output instance details
-output "eks_ssm_instance_id" {
-  value = aws_instance.eks_ssm_instance.id
-}
-
-output "ssm_session_command" {
-  value = "aws ssm start-session --target ${aws_instance.eks_ssm_instance.id}"
-}
-
-# 7️⃣ Data source for Amazon Linux 2 AMI
+# Amazon Linux 2 AMI
 data "aws_ami" "amazon_linux" {
   most_recent = true
   owners      = ["amazon"]
@@ -135,4 +127,13 @@ data "aws_ami" "amazon_linux" {
     name   = "name"
     values = ["amzn2-ami-hvm-*-x86_64-gp2"]
   }
+}
+
+# Outputs
+output "eks_ssm_instance_id" {
+  value = aws_instance.eks_ssm_instance.id
+}
+
+output "ssm_session_command" {
+  value = "aws ssm start-session --target ${aws_instance.eks_ssm_instance.id}"
 }
