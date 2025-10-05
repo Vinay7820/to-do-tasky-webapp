@@ -35,7 +35,10 @@ until mongo --eval "db.adminCommand('ping')" >/dev/null 2>&1; do
 done
 
 # --- Create MongoDB user for the application ---
-mongo --eval 'use taskydb; db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]})'
+# mongo --eval 'use taskydb; db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]})'
+
+# --- Create MongoDB user for the application (only if not exists) ---
+mongo --eval 'db = db.getSiblingDB("taskydb"); if (!db.getUser("taskyuser")) { db.createUser({user:"taskyuser",pwd:"taskypass",roles:[{role:"readWrite",db:"taskydb"}]}) }'
 
 
 # --- Enable MongoDB authentication ---
