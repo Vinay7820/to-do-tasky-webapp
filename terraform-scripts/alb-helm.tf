@@ -1,14 +1,9 @@
 resource "helm_release" "aws_load_balancer_controller" {
-  name       = "aws-load-balancer-controller"
+  provider = helm
+  name      = "aws-load-balancer-controller"
   repository = "https://aws.github.io/eks-charts"
-  chart      = "aws-load-balancer-controller"
-  namespace  = "kube-system"
-  version    = "1.13.4"
-
-  depends_on = [
-    aws_iam_role.alb_controller,
-    kubernetes_service_account.alb_controller
-  ]
+  chart     = "aws-load-balancer-controller"
+  namespace = "kube-system"
 
   set {
     name  = "clusterName"
@@ -32,6 +27,13 @@ resource "helm_release" "aws_load_balancer_controller" {
 
   set {
     name  = "serviceAccount.name"
-    value = "aws-load-balancer-controller"
+    value = kubernetes_service_account.alb_controller.metadata[0].name
   }
+
+  depends_on = [
+    kubernetes_service_account.alb_controller,
+    aws_iam_role_policy_attachment.alb_controller,
+    aws_iam_openid_connect_provider.eks,
+    null_resource.update_kubeconfig
+  ]
 }
