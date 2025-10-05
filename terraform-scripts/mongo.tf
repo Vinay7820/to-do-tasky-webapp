@@ -166,7 +166,6 @@ resource "aws_s3_bucket_policy" "mongo_backups" {
       }
     ]
   })
-}
 
 
   # Wait for both bucket creation *and* public block disable
