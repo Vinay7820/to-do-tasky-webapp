@@ -1,8 +1,3 @@
-# Get the OIDC issuer for EKS
-data "aws_eks_cluster" "this" {
-  name = aws_eks_cluster.this.name
-}
-
 # OIDC provider for IRSA
 resource "aws_iam_openid_connect_provider" "eks" {
   url = data.aws_eks_cluster.this.identity[0].oidc[0].issuer
