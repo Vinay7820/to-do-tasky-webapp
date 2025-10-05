@@ -1,67 +1,106 @@
-# -------------------------------
+# ------------------------------
 # Terraform
-# -------------------------------
+# ------------------------------
+
 # Local .terraform directories
 **/.terraform/*
-.terraform/
+**/.terraform/
+
+# Terraform lock files
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.*
 
 # Terraform state files
 *.tfstate
 *.tfstate.*
-terraform.tfstate
-terraform.tfstate.backup
-
-# Crash logs
-crash.log
-crash.*.log
-
-# Override files (local only)
-override.tf
-override.tf.json
-*_override.tf
-*_override.tf.json
-
-# Plan output files
-*.tfplan
-
-# Terraform variable files (can contain secrets)
 *.tfvars
 *.tfvars.json
 
-# Sensitive local files
-credentials.tf
-# -------------------------------
-# AWS & SSH
-# -------------------------------
-.aws/
-aws_credentials
-.aws/credentials
-.aws/config
+# Crash log files
+crash.log
+crash.*.log
 
-# -------------------------------
-# IDE / OS / Misc
-# -------------------------------
-# macOS
-.DS_Store
-
-# VSCode / IntelliJ / etc.
-.vscode/
-.idea/
-
-# Logs
-*.log
-*.tmp
-
-# Python / Shell cache files
-__pycache__/
-*.pyc
-*.pyo
+# Ignore backup and override files
+*.tfbackup
+*.backup
+*.bak
+*.old
+*.orig
 *.swp
 
-# Backup or temp dirs
-*~
+# Terraform plan files
+*.plan
+*.tfplan
+
+# CLI configuration files
+.terraformrc
+terraform.rc
+
+# Sensitive files
+*.pem
+*.key
+*.crt
+*.p12
+*.csr
+*.env
+
+# ------------------------------
+# Kubernetes
+# ------------------------------
+
+# Kube config and temporary manifests
+.kube/
+*.yaml.save
+*.yml.save
+*.yaml~
+*.yml~
+*.tmp.yaml
+*.tmp.yml
+
+# Minikube / kubeadm local files
+.minikube/
+*.conf
+
+# Helm
+charts/
+*.tgz
+*.lock
+
+# Kustomize build output
+build/
+
+# ------------------------------
+# OS / IDE / Misc
+# ------------------------------
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# VSCode
+.vscode/
+.history/
+
+# JetBrains (IntelliJ, PyCharm, GoLand, etc.)
+.idea/
+
+# Logs and temp files
+*.log
+*.tmp
 tmp/
 logs/
-backup/
+log/
+.cache/
+
+# Backup folders
 tf-backup-*/
+backup/
+backups/
 

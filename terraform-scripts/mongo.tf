@@ -10,10 +10,10 @@ resource "aws_security_group" "mongo_sg" {
   }
 
   ingress {
-    from_port       = 27017
-    to_port         = 27017
-    protocol        = "tcp"
-    cidr_blocks     = ["10.0.0.0/16"]
+    from_port   = 27017
+    to_port     = 27017
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
   }
 
   egress {
@@ -22,7 +22,7 @@ resource "aws_security_group" "mongo_sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-tags = {
+  tags = {
     Name = "${var.project}-mongo-sg"
   }
 }
@@ -67,10 +67,10 @@ resource "random_string" "bucket_suffix" {
 }
 
 resource "aws_instance" "mongo" {
-  ami           = data.aws_ami.ubuntu_focal.id
-  instance_type = "t3.micro"
-  subnet_id     = aws_subnet.public[0].id
-  key_name      = aws_key_pair.mongo.key_name
+  ami                    = data.aws_ami.ubuntu_focal.id
+  instance_type          = "t3.micro"
+  subnet_id              = aws_subnet.public[0].id
+  key_name               = aws_key_pair.mongo.key_name
   vpc_security_group_ids = [aws_security_group.mongo_sg.id]
   depends_on = [
     null_resource.disable_account_public_block
@@ -78,11 +78,11 @@ resource "aws_instance" "mongo" {
 
   # Existing user_data for base setup
   user_data = templatefile("${path.module}/scripts/mongo_base.sh", {
-  project     = var.project
-  bucket_suffix  = random_string.bucket_suffix.result
-  bucket_name    = aws_s3_bucket.mongo_backups.bucket
-})
-tags = {
+    project       = var.project
+    bucket_suffix = random_string.bucket_suffix.result
+    bucket_name   = aws_s3_bucket.mongo_backups.bucket
+  })
+  tags = {
     Name = "${var.project}-mongo"
   }
 
@@ -90,10 +90,10 @@ tags = {
   # Remote exec safety net
   provisioner "remote-exec" {
     inline = [
-    "until systemctl status mongod >/dev/null 2>&1; do sleep 5; done",
-    "until mongo --eval \"db.adminCommand('ping')\" >/dev/null 2>&1; do sleep 5; done",
-    "mongo --eval 'if (db.getSiblingDB(\"taskydb\").getUser(\"taskyuser\") == null) { db.getSiblingDB(\"taskydb\").createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]}) }'"
-  ]
+      "until systemctl status mongod >/dev/null 2>&1; do sleep 5; done",
+      "until mongo --eval \"db.adminCommand('ping')\" >/dev/null 2>&1; do sleep 5; done",
+      "mongo --eval 'if (db.getSiblingDB(\"taskydb\").getUser(\"taskyuser\") == null) { db.getSiblingDB(\"taskydb\").createUser({user:\"taskyuser\",pwd:\"taskypass\",roles:[{role:\"readWrite\",db:\"taskydb\"}]}) }'"
+    ]
 
     connection {
       type        = "ssh"
@@ -101,7 +101,7 @@ tags = {
       private_key = file(pathexpand("../d-vim-mongo-server.pem"))
       host        = self.public_ip
     }
-}
+  }
 }
 
 # Ensure account-level S3 Public Access Block is disabled
@@ -125,12 +125,12 @@ resource "null_resource" "disable_account_public_block" {
 resource "aws_s3_bucket" "mongo_backups" {
   bucket        = "${var.project}-mongo-backups-${random_string.bucket_suffix.result}"
   force_destroy = true
-  region = "us-east-1"
+  region        = "us-east-1"
   tags = {
     Name        = "${var.project}-mongo-backups"
     Environment = "dev"
   }
- depends_on = [null_resource.disable_account_public_block]
+  depends_on = [null_resource.disable_account_public_block]
 }
 
 resource "aws_s3_bucket_policy" "mongo_backups" {
@@ -139,10 +139,10 @@ resource "aws_s3_bucket_policy" "mongo_backups" {
     Version = "2012-10-17",
     Statement = [
       {
-        Sid = "AllowListAndGet",
-        Effect = "Allow",
+        Sid       = "AllowListAndGet",
+        Effect    = "Allow",
         Principal = "*",
-        Action   = ["s3:GetObject", "s3:ListBucket"],
+        Action    = ["s3:GetObject", "s3:ListBucket"],
         Resource = [
           "${aws_s3_bucket.mongo_backups.arn}",
           "${aws_s3_bucket.mongo_backups.arn}/*"
@@ -150,10 +150,10 @@ resource "aws_s3_bucket_policy" "mongo_backups" {
       }
     ]
   })
- 
+
   # Wait for both bucket creation *and* public block disable
   depends_on = [
     aws_s3_bucket.mongo_backups,
     null_resource.disable_account_public_block
-]
+  ]
 }

@@ -50,6 +50,9 @@ output "ingress_alb_dns" {
   depends_on = [kubernetes_ingress_v1.tasky]
 }
 
-
+output "eks_creds_debug" {
+  value     = data.external.eks_creds.result
+  sensitive = true
+}
 
 
