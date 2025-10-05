@@ -94,6 +94,9 @@ resource "kubernetes_secret" "mongo_uri" {
   metadata {
     name      = "mongo-uri-secret"
     namespace = kubernetes_namespace.tasky.metadata[0].name
+    annotations = {
+      "checksum/mongo-uri" = sha1("${aws_instance.mongo.private_ip}")
+    }
   }
   data = {
     # MONGODB_URI = "mongodb://taskyuser:taskypass@${aws_instance.mongo.private_ip}:27017/taskydb"
