@@ -1,17 +1,6 @@
 #########################################
 # ALB Controller IAM + OIDC Integration #
 #########################################
-
-# --- Fetch EKS cluster details ---
-data "aws_eks_cluster" "this" {
-  name = aws_eks_cluster.this.name
-}
-
-# --- Fetch authentication info for cluster ---
-data "aws_eks_cluster_auth" "this" {
-  name = aws_eks_cluster.this.name
-}
-
 # --- Create IAM OIDC provider for EKS ---
 resource "aws_iam_openid_connect_provider" "eks" {
   client_id_list  = ["sts.amazonaws.com"]
