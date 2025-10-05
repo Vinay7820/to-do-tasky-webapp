@@ -104,7 +104,7 @@ resource "aws_instance" "mongo" {
   }
 }
 
- Ensure account-level S3 Public Access Block is disabled
+# Ensure account-level S3 Public Access Block is disabled
 resource "null_resource" "disable_account_public_block" {
   provisioner "local-exec" {
     command = <<EOT
