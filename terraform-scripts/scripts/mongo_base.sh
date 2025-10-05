@@ -49,7 +49,7 @@ else
   echo -e "\nsecurity:\n  authorization: enabled" >> /etc/mongod.conf
 fi
 
-systemctl restart mongod
+sudo systemctl restart mongod
 
 touch "$LOG_FILE"
 chmod 644 "$LOG_FILE"
