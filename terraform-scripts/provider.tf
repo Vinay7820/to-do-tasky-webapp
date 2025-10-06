@@ -70,7 +70,6 @@ provider "kubernetes" {
 
   #avoid reading any local kubeconfig
   #load_config_file = false
-  depends_on = [aws_eks_cluster.this]
 }
 
 provider "helm" {
@@ -80,7 +79,6 @@ provider "helm" {
     cluster_ca_certificate = base64decode(data.external.eks_creds.result["ca"])
     token                  = data.external.eks_creds.result["token"]
 }
-    depends_on = [aws_eks_cluster.this]
 }
 
 
